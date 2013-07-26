@@ -1,0 +1,41 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	<parent>
+		<groupId>com.comcast.tvx.xreapps.common.deployment</groupId>
+		<artifactId>jcloudswrapper-main</artifactId>
+		<version>1.0-SNAPSHOT</version>
+	</parent>		
+	<artifactId>jcloudswrapper-maven-plugin</artifactId>
+	<packaging>maven-plugin</packaging>	
+	<name>JClouds Wrapper Plugin - Maven Mojo</name>	
+	<scm>
+		<connection>scm:svn:http://svn2.cvs.ula.comcast.net/svn/cvs-xre-apps/trunk/common/jcloudswrappermain/jcloudswrapper-maven-plugin
+		</connection>
+		<developerConnection>scm:svn:http://svn2.cvs.ula.comcast.net/svn/cvs-xre-apps/trunk/common/jcloudswrappermain/jcloudswrapper-maven-plugin
+		</developerConnection>
+		<url>http://svn2.cvs.ula.comcast.net/svn/cvs-xre-apps/trunk/common/jcloudswrappermain/jcloudswrapper-maven-plugin
+		</url>
+	</scm>
+	<organization>
+		<name>TVX</name>
+	</organization>
+	<developers>
+		<developer>
+			<id>mroowa000</id>
+			<name>Mohsin Roowalla</name>
+			<email>Mohsin_Roowalla@cable.comcast.com</email>
+			<organization>${project.organization.name}</organization>
+		</developer>
+	</developers>
+	<dependencies>
+		<dependency>
+			<groupId>org.apache.maven</groupId>
+			<artifactId>maven-plugin-api</artifactId>			
+		</dependency>		
+		<dependency>
+			<groupId>com.comcast.tvx.xreapps.common.deployment</groupId>
+			<artifactId>jcloudswrapper</artifactId>			
+		</dependency>		
+	</dependencies>
+</project>

@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+
+	<parent>
+		<groupId>com.comcast.tvx.xreapps.common.deployment</groupId>
+		<artifactId>jcloudswrapper-main</artifactId>
+		<version>1.0-SNAPSHOT</version>
+	</parent>	
+	<artifactId>jcloudswrapper</artifactId>	
+	<packaging>jar</packaging>
+	<name>JClouds Wrapper</name>
+	<scm>
+		<connection>scm:svn:http://svn2.cvs.ula.comcast.net/svn/cvs-xre-apps/trunk/common/jcloudswrappermain/jcloudswrapper
+		</connection>
+		<developerConnection>scm:svn:http://svn2.cvs.ula.comcast.net/svn/cvs-xre-apps/trunk/common/jcloudswrappermain/jcloudswrapper
+		</developerConnection>
+		<url>http://svn2.cvs.ula.comcast.net/svn/cvs-xre-apps/trunk/common/jcloudswrappermain/jcloudswrapper
+		</url>
+	</scm>	
+	<organization>
+		<name>TVX</name>
+	</organization>
+	<developers>
+		<developer>
+			<id>mroowa000</id>
+			<name>Mohsin Roowalla</name>
+			<email>Mohsin_Roowalla@cable.comcast.com</email>
+			<organization>${project.organization.name}</organization>
+		</developer>
+	</developers>
+	<dependencies>
+		<dependency>
+			<groupId>org.jclouds</groupId>
+			<artifactId>jclouds-all</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.testng</groupId>
+			<artifactId>testng</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.easymock</groupId>
+			<artifactId>easymock</artifactId>
+		</dependency>
+	</dependencies>
+	<build>
+		<pluginManagement>
+			<plugins>
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-surefire-plugin</artifactId>
+					<configuration>
+						<systemPropertyVariables>
+							<build.dir>${project.build.directory}</build.dir>
+						</systemPropertyVariables>
+						<redirectTestOutputToFile>false</redirectTestOutputToFile>
+					</configuration>
+				</plugin>
+			</plugins>
+		</pluginManagement>
+	</build>
+	<reporting>
+		<plugins>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-javadoc-plugin</artifactId>				
+				<configuration>
+					<failOnError>false</failOnError>
+					<verbose>true</verbose>
+				</configuration>
+				<reportSets>
+					<reportSet>
+						<id>html</id>
+						<reports>
+							<report>javadoc</report>
+						</reports>
+					</reportSet>
+				</reportSets>
+			</plugin>
+		</plugins>
+	</reporting>
+</project>
