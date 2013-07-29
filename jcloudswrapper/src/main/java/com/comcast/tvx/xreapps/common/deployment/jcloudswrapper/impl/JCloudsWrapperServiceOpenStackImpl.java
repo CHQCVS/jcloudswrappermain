@@ -61,7 +61,7 @@ public class JCloudsWrapperServiceOpenStackImpl implements JCloudsWrapperService
         floatingIPApi = this.getFloatingIPApi();
     }  
     
-    /*public JCloudsWrapperServiceOpenStackImpl(ComputeService computeService, FloatingIPApi floatingIPApi) {
+   /*public JCloudsWrapperServiceOpenStackImpl(ComputeService computeService, FloatingIPApi floatingIPApi) {
     	this.computeService = computeService;
     	this.floatingIPApi = floatingIPApi;
     }*/
@@ -424,9 +424,10 @@ public class JCloudsWrapperServiceOpenStackImpl implements JCloudsWrapperService
         	 throw new RuntimeException("No Key Pair found");
          }
          if (script != null) {        
+        	byte[] userdata = script.getBytes();
 			return ((NovaTemplateOptions) templateOptions.userMetadata("name", groupName).userMetadata("delete",
 			     "true").securityGroupNames(
-			     JCloudsWrapperServiceOpenStackConstants.DEFAULT_SECURITY_GROUP).runScript(script)).keyPairName(JCloudsWrapperServiceOpenStackConstants.KEY_PAIR_NAME).overrideLoginUser(JCloudsWrapperServiceOpenStackConstants.LOGIN_USER);
+			     JCloudsWrapperServiceOpenStackConstants.DEFAULT_SECURITY_GROUP).userData(userdata)).keyPairName(JCloudsWrapperServiceOpenStackConstants.KEY_PAIR_NAME).overrideLoginUser(JCloudsWrapperServiceOpenStackConstants.LOGIN_USER);
 		
          }          
 		return templateOptions.userMetadata("name", groupName).userMetadata("delete",
