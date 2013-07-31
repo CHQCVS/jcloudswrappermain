@@ -1,5 +1,10 @@
 package com.comcast.tvx.xreapps.common.deployment;
 
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.IOException;
 import java.util.List;
 import java.util.Set;
 
@@ -55,9 +60,9 @@ public class JCloudsWrapperProvisionMojo extends AbstractMojo {
 	private List<String> floatingIPs;
 
 	/**
-	 * @parameter expression="${script}"
+	 * @parameter expression="${userData}"
 	 */
-	private String script;
+	private File userdata;
 
 	public void execute() throws MojoExecutionException {
 		Set<VMMetadata> vmMetadata = null;
@@ -80,14 +85,14 @@ public class JCloudsWrapperProvisionMojo extends AbstractMojo {
 				getLog().info(
 						"Using default operating system and hardware profile");
 				getLog().info("Floating IP: " + floatingIPs);
-				if (script == null || script.isEmpty()) {
-					getLog().info("Script is : " + script);
+				if (userdata == null || !userdata.exists()) {
+					getLog().info("Path to userData is : " + userdata.getAbsolutePath());
 					vmMetadata = jCloudsWrapperService.provisionVM(count,
 							groupName, null, null);
 				} else {
-					getLog().info("Script is : " + script);
+					getLog().info("Path to userData is : " + userdata.getAbsolutePath());
 					vmMetadata = jCloudsWrapperService.provisionVM(count,
-							groupName, null, script);
+							groupName, null, this.getUserDataString(userdata));
 				}
 				for (VMMetadata eachVMMetadata : vmMetadata) {
 					getLog().info(eachVMMetadata.toString());
@@ -98,14 +103,14 @@ public class JCloudsWrapperProvisionMojo extends AbstractMojo {
 				for (String eachFloatingIP : floatingIPs) {
 					getLog().info("Floating IP: " + eachFloatingIP);
 				}
-				if (script == null || script.isEmpty()) {
-					getLog().info("Script is : " + script);
+				if (userdata == null || !userdata.exists()) {
+					getLog().info("Path to userData is : " + userdata.getAbsolutePath());
 					vmMetadata = jCloudsWrapperService.provisionVM(count,
 							groupName, floatingIPs, null);
 				} else {
-					getLog().info("Script is : " + script);
+					getLog().info("Path to userData is : " + userdata.getAbsolutePath());
 					vmMetadata = jCloudsWrapperService.provisionVM(count,
-							groupName, floatingIPs, script);
+							groupName, floatingIPs, this.getUserDataString(userdata));
 				}
 				for (VMMetadata eachVMMetadata : vmMetadata) {
 					getLog().info(eachVMMetadata.toString());
@@ -116,16 +121,16 @@ public class JCloudsWrapperProvisionMojo extends AbstractMojo {
 				getLog().info("Operating system is: " + operatingSystemImage);
 				getLog().info("Hardware Profile is: " + hardwareProfile);
 				getLog().info("Floating IP: " + floatingIPs);
-				if (script == null || script.isEmpty()) {
-					getLog().info("Script is : " + script);
+				if (userdata == null || !userdata.exists()) {
+					getLog().info("Path to userData is : " + userdata.getAbsolutePath());
 					vmMetadata = jCloudsWrapperService.provisionVM(
 							operatingSystemImage, hardwareProfile, count,
 							groupName, null, null);
 				} else {
-					getLog().info("Script is : " + script);
+					getLog().info("Path to userData is : " + userdata.getAbsolutePath());
 					vmMetadata = jCloudsWrapperService.provisionVM(
 							operatingSystemImage, hardwareProfile, count,
-							groupName, null, script);
+							groupName, null, this.getUserDataString(userdata));
 
 				}
 				for (VMMetadata eachVMMetadata : vmMetadata) {
@@ -137,17 +142,17 @@ public class JCloudsWrapperProvisionMojo extends AbstractMojo {
 				for (String eachFloatingIP : floatingIPs) {
 					getLog().info("Floating IP: " + eachFloatingIP);
 				}
-				if (script == null || script.isEmpty()) {
-					getLog().info("Script is : " + script);
+				if (userdata == null || !userdata.exists()) {
+					getLog().info("Path to userData is : " + userdata.getAbsolutePath());
 					vmMetadata = jCloudsWrapperService.provisionVM(
 							operatingSystemImage, hardwareProfile, count,
 							groupName, floatingIPs, null);
 
 				} else {
-					getLog().info("Script is : " + script);
+					getLog().info("Path to userData is : " + userdata.getAbsolutePath());
 					vmMetadata = jCloudsWrapperService.provisionVM(
 							operatingSystemImage, hardwareProfile, count,
-							groupName, floatingIPs, script);
+							groupName, floatingIPs, this.getUserDataString(userdata));
 				}
 				for (VMMetadata eachVMMetadata : vmMetadata) {
 					getLog().info(eachVMMetadata.toString());
@@ -167,5 +172,24 @@ public class JCloudsWrapperProvisionMojo extends AbstractMojo {
 	private void close() {
 		jCloudsWrapperService.close();
 		getLog().info("JClouds Wrapper Service Closed");
+	}
+	
+	private String getUserDataString(File userData) {
+		StringBuffer sb = new StringBuffer();
+		BufferedReader input;
+		try {
+			input = new BufferedReader(new FileReader(userData));
+		} catch (FileNotFoundException e1) {
+			throw new RuntimeException("File " + userData.getAbsolutePath() + " not found: " + e1.getMessage());
+		}
+		String line = null;
+		try {
+			while((line = input.readLine()) != null) {
+				sb.append(line).append(" \n");
+			}
+		} catch (IOException e) {
+			throw new RuntimeException("Exception while reading File " + userData.getAbsolutePath() + " : " + e.getMessage());
+		}				
+		return sb.toString();
 	}
 }
