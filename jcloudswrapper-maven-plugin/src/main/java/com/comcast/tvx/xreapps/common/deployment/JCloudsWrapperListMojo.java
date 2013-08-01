@@ -23,7 +23,7 @@ public class JCloudsWrapperListMojo extends AbstractMojo {
 	private JCloudsWrapperService jCloudsWrapperService;
 
 	/**
-	 * @parameter expression="${cloudProvider}"
+	 * @parameter expression="${cloudProvider}" default-value="OPEN_STACK"
 	 */
 	private CloudProvider cloudProvider;
 
