@@ -25,7 +25,7 @@ public class FilterUtil {
 	
 	/**
 	 * Get the {@link Filter} based in inGroup and nameStartsWith
-	 * @param group - inGroup
+	 * @param group - groupName
 	 * @param name - nameStartsWith
 	 * @return - {@link Filter}
 	 */
@@ -34,10 +34,13 @@ public class FilterUtil {
 		if ((name == null || name.isEmpty())
 				&& (group == null || group.isEmpty())) {	
 			jCloudsWrapperService.close();
-			throw new RuntimeException("Both \"inGroup\" and \"nameStartsWith\" is null or Empty. Enter either one or both");
+			throw new RuntimeException("Both \"groupName\" and \"nameStartsWith\" are null or Empty. Enter any one");
 
-		} else if ((name == null || name.isEmpty())
-				&& (group != null && !group.isEmpty())) {			
+		} else if ((name != null && !name.isEmpty())
+				&& (group != null && !group.isEmpty())) {
+			jCloudsWrapperService.close();
+			throw new RuntimeException("Both \"groupName\" and \"nameStartsWith\" cannot be set. Enter any one");
+		} else if (group != null && !group.isEmpty()) {			
 			filter = filterBuilder
 					.chooseComputeMetadataPredicate(
 							ComputeMetadataPredicate.ALL_LOCATIONS, null)
@@ -45,19 +48,10 @@ public class FilterUtil {
 							nodeMetadataPredicateBuilder.inGroup(group).build())
 					.build();
 
-		} else if ((name != null && !name.isEmpty())
-				&& (group == null || group.isEmpty())) {			
+		} else if ((name != null && !name.isEmpty())) {			
 			filter = filterBuilder.chooseComputeMetadataPredicate(
 					ComputeMetadataPredicate.NAME_STARTS_WITH, name).build();
 
-		} else if ((name != null && !name.isEmpty())
-				&& (group != null && !group.isEmpty())) {
-			filter = filterBuilder
-					.chooseComputeMetadataPredicate(
-							ComputeMetadataPredicate.NAME_STARTS_WITH, name)
-					.chooseNodeMetadataPredicate(
-							nodeMetadataPredicateBuilder.inGroup(group).build())
-					.build();
 		}		
 		return filter;
 	}

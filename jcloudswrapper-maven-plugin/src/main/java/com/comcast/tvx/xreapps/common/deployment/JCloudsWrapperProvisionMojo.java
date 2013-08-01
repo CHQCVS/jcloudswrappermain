@@ -162,12 +162,12 @@ public class JCloudsWrapperProvisionMojo extends AbstractMojo {
 		jCloudsWrapperFactory = new JCloudsWrapperFactory();
 		jCloudsWrapperService = jCloudsWrapperFactory
 				.getJCloudsWrapperService(cloudProvider);
-		getLog().info("JClouds Wrapper Service Initialized");
+		getLog().debug("JClouds Wrapper Service Initialized");
 	}
 
 	private void close() {
 		jCloudsWrapperService.close();
-		getLog().info("JClouds Wrapper Service Closed");
+		getLog().debug("JClouds Wrapper Service Closed");
 	}
 	
 	private String getUserDataString(File userData) {

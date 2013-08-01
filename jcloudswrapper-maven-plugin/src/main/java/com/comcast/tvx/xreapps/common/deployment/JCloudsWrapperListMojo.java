@@ -33,9 +33,9 @@ public class JCloudsWrapperListMojo extends AbstractMojo {
 	private String nameStartsWith;
 
 	/**
-	 * @parameter expression="${inGroup}"
+	 * @parameter expression="${groupName}"
 	 */
-	private String inGroup;
+	private String groupName;
 
 	/**
 	 * @parameter default-value="false" expression="${listAll}"
@@ -50,7 +50,7 @@ public class JCloudsWrapperListMojo extends AbstractMojo {
 		getLog().info("Cloud Provider is: " + cloudProvider);
 		getLog().info("listAll is: " + listAll);
 		getLog().info("nameStartsWith is: " + nameStartsWith);
-		getLog().info("inGroup is: " + inGroup);
+		getLog().info("groupName is: " + groupName);
 
 		this.initializeService();
 
@@ -58,7 +58,7 @@ public class JCloudsWrapperListMojo extends AbstractMojo {
 		if (listAll) {
 			filter = filterUtil.getFilterListAll();
 		} else {
-			filter = filterUtil.getFilter(inGroup, nameStartsWith);
+			filter = filterUtil.getFilter(groupName, nameStartsWith);
 		}
 		vmMetadata = jCloudsWrapperService.listNodesDetailsMatching(filter);
 		for (VMMetadata eachVMMetadata : vmMetadata) {
@@ -71,11 +71,11 @@ public class JCloudsWrapperListMojo extends AbstractMojo {
 		jCloudsWrapperFactory = new JCloudsWrapperFactory();
 		jCloudsWrapperService = jCloudsWrapperFactory
 				.getJCloudsWrapperService(cloudProvider);
-		getLog().info("JClouds Wrapper Service Initialized");
+		getLog().debug("JClouds Wrapper Service Initialized");
 	}
 
 	private void close() {
 		jCloudsWrapperService.close();
-		getLog().info("JClouds Wrapper Service Closed");
+		getLog().debug("JClouds Wrapper Service Closed");
 	}
 }
