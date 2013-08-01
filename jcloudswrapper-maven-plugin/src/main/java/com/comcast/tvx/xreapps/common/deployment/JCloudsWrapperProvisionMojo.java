@@ -28,19 +28,19 @@ public class JCloudsWrapperProvisionMojo extends AbstractMojo {
 	private JCloudsWrapperService jCloudsWrapperService;
 
 	/**
-	 * @parameter expression="${cloud.provider}"
+	 * @parameter expression="${cloudProvider}"
 	 */
 	private CloudProvider cloudProvider;
 
 	/**
 	 * @parameter expression="${os}"
 	 */
-	private OperatingSystemImage operatingSystemImage;
+	private OperatingSystemImage os;
 
 	/**
 	 * @parameter expression="${hardware}"
 	 */
-	private HardwareProfile hardwareProfile;
+	private HardwareProfile hardware;
 
 	/**
 	 * @parameter default-value="1" expression="${count}"
@@ -48,21 +48,21 @@ public class JCloudsWrapperProvisionMojo extends AbstractMojo {
 	private Integer count;
 
 	/**
-	 * @parameter expression="${group.name}"
+	 * @parameter expression="${groupName}"
 	 */
 	private String groupName;
 
 	/**
 	 * List of Floating IPs
 	 * 
-	 * @parameter expression="${floating.ips}"
+	 * @parameter expression="${floatingIPs}"
 	 */
 	private List<String> floatingIPs;
 
 	/**
 	 * @parameter expression="${userData}"
 	 */
-	private File userdata;
+	private File userData;
 
 	public void execute() throws MojoExecutionException {
 		Set<VMMetadata> vmMetadata = null;
@@ -73,26 +73,25 @@ public class JCloudsWrapperProvisionMojo extends AbstractMojo {
 		if (groupName == null || groupName.isEmpty()) {
 			this.close();
 			throw new RuntimeException(
-					"Set property \"-Dgroup.name\" before proceeding");
+					"Set configuration parameter \"groupName\" before proceeding");
 		} else {
 			getLog().info("Group Name is: " + groupName);
 		}
 
 		getLog().info("Count is: " + count);
 
-		if ((operatingSystemImage == null) || (hardwareProfile == null)) {
+		if ((os == null) || (hardware == null)) {
 			if (floatingIPs.isEmpty() || floatingIPs == null) {
 				getLog().info(
 						"Using default operating system and hardware profile");
 				getLog().info("Floating IP: " + floatingIPs);
-				if (userdata == null || !userdata.exists()) {
-					getLog().info("Path to userData is : " + userdata.getAbsolutePath());
+				if (userData == null || !userData.exists()) {					
 					vmMetadata = jCloudsWrapperService.provisionVM(count,
 							groupName, null, null);
 				} else {
-					getLog().info("Path to userData is : " + userdata.getAbsolutePath());
+					getLog().info("Path to userData is : " + userData.getAbsolutePath());
 					vmMetadata = jCloudsWrapperService.provisionVM(count,
-							groupName, null, this.getUserDataString(userdata));
+							groupName, null, this.getUserDataString(userData));
 				}
 				for (VMMetadata eachVMMetadata : vmMetadata) {
 					getLog().info(eachVMMetadata.toString());
@@ -103,14 +102,13 @@ public class JCloudsWrapperProvisionMojo extends AbstractMojo {
 				for (String eachFloatingIP : floatingIPs) {
 					getLog().info("Floating IP: " + eachFloatingIP);
 				}
-				if (userdata == null || !userdata.exists()) {
-					getLog().info("Path to userData is : " + userdata.getAbsolutePath());
+				if (userData == null || !userData.exists()) {					
 					vmMetadata = jCloudsWrapperService.provisionVM(count,
 							groupName, floatingIPs, null);
 				} else {
-					getLog().info("Path to userData is : " + userdata.getAbsolutePath());
+					getLog().info("Path to userData is : " + userData.getAbsolutePath());
 					vmMetadata = jCloudsWrapperService.provisionVM(count,
-							groupName, floatingIPs, this.getUserDataString(userdata));
+							groupName, floatingIPs, this.getUserDataString(userData));
 				}
 				for (VMMetadata eachVMMetadata : vmMetadata) {
 					getLog().info(eachVMMetadata.toString());
@@ -118,41 +116,39 @@ public class JCloudsWrapperProvisionMojo extends AbstractMojo {
 			}
 		} else {
 			if (floatingIPs.isEmpty() || floatingIPs == null) {
-				getLog().info("Operating system is: " + operatingSystemImage);
-				getLog().info("Hardware Profile is: " + hardwareProfile);
+				getLog().info("Operating system is: " + os);
+				getLog().info("Hardware Profile is: " + hardware);
 				getLog().info("Floating IP: " + floatingIPs);
-				if (userdata == null || !userdata.exists()) {
-					getLog().info("Path to userData is : " + userdata.getAbsolutePath());
+				if (userData == null || !userData.exists()) {					
 					vmMetadata = jCloudsWrapperService.provisionVM(
-							operatingSystemImage, hardwareProfile, count,
+							os, hardware, count,
 							groupName, null, null);
 				} else {
-					getLog().info("Path to userData is : " + userdata.getAbsolutePath());
+					getLog().info("Path to userData is : " + userData.getAbsolutePath());
 					vmMetadata = jCloudsWrapperService.provisionVM(
-							operatingSystemImage, hardwareProfile, count,
-							groupName, null, this.getUserDataString(userdata));
+							os, hardware, count,
+							groupName, null, this.getUserDataString(userData));
 
 				}
 				for (VMMetadata eachVMMetadata : vmMetadata) {
 					getLog().info(eachVMMetadata.toString());
 				}
 			} else {
-				getLog().info("Operating system is: " + operatingSystemImage);
-				getLog().info("Hardware Profile is: " + hardwareProfile);
+				getLog().info("Operating system is: " + os);
+				getLog().info("Hardware Profile is: " + hardware);
 				for (String eachFloatingIP : floatingIPs) {
 					getLog().info("Floating IP: " + eachFloatingIP);
 				}
-				if (userdata == null || !userdata.exists()) {
-					getLog().info("Path to userData is : " + userdata.getAbsolutePath());
+				if (userData == null || !userData.exists()) {					
 					vmMetadata = jCloudsWrapperService.provisionVM(
-							operatingSystemImage, hardwareProfile, count,
+							os, hardware, count,
 							groupName, floatingIPs, null);
 
 				} else {
-					getLog().info("Path to userData is : " + userdata.getAbsolutePath());
+					getLog().info("Path to userData is : " + userData.getAbsolutePath());
 					vmMetadata = jCloudsWrapperService.provisionVM(
-							operatingSystemImage, hardwareProfile, count,
-							groupName, floatingIPs, this.getUserDataString(userdata));
+							os, hardware, count,
+							groupName, floatingIPs, this.getUserDataString(userData));
 				}
 				for (VMMetadata eachVMMetadata : vmMetadata) {
 					getLog().info(eachVMMetadata.toString());

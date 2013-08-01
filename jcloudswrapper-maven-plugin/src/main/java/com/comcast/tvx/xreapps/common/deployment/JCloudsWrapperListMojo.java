@@ -23,24 +23,24 @@ public class JCloudsWrapperListMojo extends AbstractMojo {
 	private JCloudsWrapperService jCloudsWrapperService;
 
 	/**
-	 * @parameter expression="${cloud.provider}"
+	 * @parameter expression="${cloudProvider}"
 	 */
 	private CloudProvider cloudProvider;
 
 	/**
 	 * @parameter expression="${nameStartsWith}"
 	 */
-	private String name;
+	private String nameStartsWith;
 
 	/**
 	 * @parameter expression="${inGroup}"
 	 */
-	private String group;
+	private String inGroup;
 
 	/**
 	 * @parameter default-value="false" expression="${listAll}"
 	 */
-	private boolean listAllInstances;
+	private boolean listAll;
 
 	public void execute() throws MojoExecutionException, MojoFailureException {
 
@@ -48,17 +48,17 @@ public class JCloudsWrapperListMojo extends AbstractMojo {
 		Filter filter = null;
 
 		getLog().info("Cloud Provider is: " + cloudProvider);
-		getLog().info("listAll is: " + listAllInstances);
-		getLog().info("nameStartsWith is: " + name);
-		getLog().info("inGroup is: " + group);
+		getLog().info("listAll is: " + listAll);
+		getLog().info("nameStartsWith is: " + nameStartsWith);
+		getLog().info("inGroup is: " + inGroup);
 
 		this.initializeService();
 
 		FilterUtil filterUtil = new FilterUtil(jCloudsWrapperService);
-		if (listAllInstances) {
+		if (listAll) {
 			filter = filterUtil.getFilterListAll();
 		} else {
-			filter = filterUtil.getFilter(group, name);
+			filter = filterUtil.getFilter(inGroup, nameStartsWith);
 		}
 		vmMetadata = jCloudsWrapperService.listNodesDetailsMatching(filter);
 		for (VMMetadata eachVMMetadata : vmMetadata) {

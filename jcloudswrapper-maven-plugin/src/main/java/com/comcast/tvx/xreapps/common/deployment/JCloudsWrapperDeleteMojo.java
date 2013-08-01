@@ -24,19 +24,19 @@ public class JCloudsWrapperDeleteMojo extends AbstractMojo {
 	private JCloudsWrapperService jCloudsWrapperService;
 
 	/**
-	 * @parameter expression="${cloud.provider}"
+	 * @parameter expression="${cloudProvider}"
 	 */
 	private CloudProvider cloudProvider;
 
 	/**
 	 * @parameter expression="${nameStartsWith}"
 	 */
-	private String name;
+	private String nameStartsWith;
 
 	/**
 	 * @parameter expression="${inGroup}"
 	 */
-	private String group;
+	private String inGroup;
 
 	public void execute() throws MojoExecutionException, MojoFailureException {
 
@@ -45,13 +45,13 @@ public class JCloudsWrapperDeleteMojo extends AbstractMojo {
 		Filter filter = null;
 
 		getLog().info("Cloud Provider is: " + cloudProvider);
-		getLog().info("nameStartsWith is: " + name);
-		getLog().info("inGroup is: " + group);
+		getLog().info("nameStartsWith is: " + nameStartsWith);
+		getLog().info("inGroup is: " + inGroup);
 
 		this.initializeService();
 
 		FilterUtil filterUtil = new FilterUtil(jCloudsWrapperService);
-		filter = filterUtil.getFilter(group, name);
+		filter = filterUtil.getFilter(inGroup, nameStartsWith);
 		vmMetadata = jCloudsWrapperService.listNodesDetailsMatching(filter);
 		if (!vmMetadata.isEmpty()) {
 			deletedVMMetadata = jCloudsWrapperService
