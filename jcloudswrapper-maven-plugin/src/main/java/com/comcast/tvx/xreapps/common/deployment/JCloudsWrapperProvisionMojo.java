@@ -8,8 +8,12 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Set;
 
+import org.apache.maven.execution.MavenSession;
+
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
+import org.apache.maven.project.MavenProject;
+
 import com.comcast.tvx.xreapps.common.deployment.jcloudswrapper.CloudProvider;
 import com.comcast.tvx.xreapps.common.deployment.jcloudswrapper.HardwareProfile;
 import com.comcast.tvx.xreapps.common.deployment.jcloudswrapper.JCloudsWrapperFactory;
@@ -63,6 +67,31 @@ public class JCloudsWrapperProvisionMojo extends AbstractMojo {
 	 * @parameter expression="${userData}"
 	 */
 	private File userData;
+	
+	/**
+	 * @parameter expression="${hostname}" default-value="hostname"
+	 */
+	private String hostname;
+
+	/**
+	 * @parameter expression="${privateIP}" default-value="privateIP"
+	 */
+	private String privateIP;
+
+	/**
+	 * @parameter expression="${publicIP}" default-value="publicIP"
+	 */
+	private String publicIP;
+	
+	/**
+	 * The Maven Session object
+	 * 
+	 * @parameter expression="${session}"
+	 * @required
+	 * @readonly
+	 */
+	protected MavenSession session;
+	
 
 	public void execute() throws MojoExecutionException {
 		Set<VMMetadata> vmMetadata = null;
@@ -75,7 +104,7 @@ public class JCloudsWrapperProvisionMojo extends AbstractMojo {
 			throw new RuntimeException(
 					"Set configuration parameter \"groupName\" before proceeding");
 		} else {
-			getLog().info("Group Name is: " + groupName);
+			getLog().info("groupName is: " + groupName);
 		}
 
 		getLog().info("Count is: " + count);
@@ -93,9 +122,7 @@ public class JCloudsWrapperProvisionMojo extends AbstractMojo {
 					vmMetadata = jCloudsWrapperService.provisionVM(count,
 							groupName, null, this.getUserDataString(userData));
 				}
-				for (VMMetadata eachVMMetadata : vmMetadata) {
-					getLog().info(eachVMMetadata.toString());
-				}
+				this.printVMMetadata(vmMetadata);
 			} else {
 				getLog().info(
 						"Using default operating system and hardware profile");
@@ -110,9 +137,7 @@ public class JCloudsWrapperProvisionMojo extends AbstractMojo {
 					vmMetadata = jCloudsWrapperService.provisionVM(count,
 							groupName, floatingIPs, this.getUserDataString(userData));
 				}
-				for (VMMetadata eachVMMetadata : vmMetadata) {
-					getLog().info(eachVMMetadata.toString());
-				}
+				this.printVMMetadata(vmMetadata);
 			}
 		} else {
 			if (floatingIPs.isEmpty() || floatingIPs == null) {
@@ -130,9 +155,7 @@ public class JCloudsWrapperProvisionMojo extends AbstractMojo {
 							groupName, null, this.getUserDataString(userData));
 
 				}
-				for (VMMetadata eachVMMetadata : vmMetadata) {
-					getLog().info(eachVMMetadata.toString());
-				}
+				this.printVMMetadata(vmMetadata);
 			} else {
 				getLog().info("Operating system is: " + os);
 				getLog().info("Hardware Profile is: " + hardware);
@@ -149,12 +172,11 @@ public class JCloudsWrapperProvisionMojo extends AbstractMojo {
 					vmMetadata = jCloudsWrapperService.provisionVM(
 							os, hardware, count,
 							groupName, floatingIPs, this.getUserDataString(userData));
-				}
-				for (VMMetadata eachVMMetadata : vmMetadata) {
-					getLog().info(eachVMMetadata.toString());
-				}
+				}				
+				this.printVMMetadata(vmMetadata);
 			}
 		}
+		this.setProjectProperties(vmMetadata);
 		this.close();
 	}
 
@@ -187,5 +209,31 @@ public class JCloudsWrapperProvisionMojo extends AbstractMojo {
 			throw new RuntimeException("Exception while reading File " + userData.getAbsolutePath() + " : " + e.getMessage());
 		}				
 		return sb.toString();
+	}
+	
+	private void printVMMetadata(Set<VMMetadata> vmMetadata) {
+		for (VMMetadata eachVMMetadata : vmMetadata) {
+			getLog().info(eachVMMetadata.toString());
+		}
+	}
+	
+	private void setProjectProperties(Set<VMMetadata> vmMetadata) {
+		if (vmMetadata == null) {
+			this.close();
+			throw new RuntimeException("No properties to populate, since no VMs provisioned");
+		}		
+		int count = 1;
+		for (MavenProject proj : session.getProjects()) {
+			for (VMMetadata eachVmMetadata : vmMetadata) {				
+				proj.getProperties().put(hostname + "." + count, eachVmMetadata.getHostname());
+				if (!eachVmMetadata.getPrivateAddresses().isEmpty()) {
+					proj.getProperties().put(privateIP + "." + count, eachVmMetadata.getPrivateAddresses().iterator().next());
+				}
+				if (!eachVmMetadata.getPublicAddresses().isEmpty()) {
+					proj.getProperties().put(publicIP + "." + count, eachVmMetadata.getPublicAddresses().iterator().next());
+				}
+				count++;
+			}					
+		}		
 	}
 }

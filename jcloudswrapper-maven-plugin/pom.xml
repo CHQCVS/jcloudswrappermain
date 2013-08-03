@@ -32,7 +32,11 @@
 		<dependency>
 			<groupId>org.apache.maven</groupId>
 			<artifactId>maven-plugin-api</artifactId>			
-		</dependency>		
+		</dependency>
+		<dependency>
+      		<groupId>org.apache.maven</groupId>
+      		<artifactId>maven-core</artifactId>
+    	</dependency>    		
 		<dependency>
 			<groupId>com.comcast.tvx.xreapps.common.deployment</groupId>
 			<artifactId>jcloudswrapper</artifactId>			
