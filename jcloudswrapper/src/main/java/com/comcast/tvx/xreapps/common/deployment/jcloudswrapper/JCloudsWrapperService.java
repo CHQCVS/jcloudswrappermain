@@ -59,8 +59,11 @@ public interface JCloudsWrapperService {
      */
     VMMetadata getNodeMetadata(String id);   
     
-    /* TODO
-    void setVMUndeletable(Set<? extends NodeMetadata> nodes); */
+    /**
+     * Set the UserMetadata for the VM as not deletable 
+     * @param vmMetadata - Set of {@link VMMetadata} to be marked as not deletable
+     */
+    void setVMUndeletable(Set<VMMetadata> vmMetadata); 
     
     /**
      * List nodes (VMs) matching a Filter expression - {@link Filter}

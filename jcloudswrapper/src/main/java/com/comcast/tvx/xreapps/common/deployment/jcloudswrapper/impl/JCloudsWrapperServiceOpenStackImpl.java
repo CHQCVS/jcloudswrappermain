@@ -30,6 +30,7 @@ import org.jclouds.openstack.nova.v2_0.domain.KeyPair;
 import org.jclouds.openstack.nova.v2_0.extensions.FloatingIPApi;
 import org.jclouds.openstack.nova.v2_0.extensions.KeyPairApi;
 import org.jclouds.openstack.nova.v2_0.extensions.SecurityGroupApi;
+import org.jclouds.openstack.nova.v2_0.features.ServerApi;
 
 import java.io.IOException;
 
@@ -37,7 +38,10 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -48,6 +52,7 @@ import java.util.regex.Pattern;
  */
 public class JCloudsWrapperServiceOpenStackImpl implements JCloudsWrapperService {   
 
+	private static final Logger LOG = Logger.getLogger("JCloudsWrapperServiceOpenStackImpl");
 	private static final int SLEEP_TIME_IN_MILLISECONDS = 3000;
     private ComputeService computeService;
     private NovaApi novaApi;
@@ -75,24 +80,39 @@ public class JCloudsWrapperServiceOpenStackImpl implements JCloudsWrapperService
     
     /**
      * {@inheritDoc}
-     */
-    /* TODO
-    public void setVMUndeletable(Set<? extends NodeMetadata> nodeMetadata) {
-    	for (NodeMetadata eachNodeMetadata : nodeMetadata) {
-    		Map<String, String> nodeMap = eachNodeMetadata.getUserMetadata();
-    		Set<String> keys = nodeMap.keySet();
-    		boolean deleteKeyExists = false;
-    		for (String eachKey : keys) {
-    			if(eachKey.equals("delete")) {
-    				nodeMap.put(eachKey, "false");
-    				deleteKeyExists = true;
-    			}      			
-    		}
-    		if (!deleteKeyExists) {
-    			nodeMap.put("delete", "false");
-    		}
-    	}
-    }*/
+     */    
+    public void setVMUndeletable(Set<VMMetadata> vmMetadata) {
+    	Set<String> configuredZones = this.getConfiguredZones();   	 
+        String zone = null;
+        ServerApi serverApi = null;
+
+        if (configuredZones.isEmpty()) {
+            throw new RuntimeException("No configured zones found");
+        } else {
+            Iterator<String> iter = configuredZones.iterator();
+
+            if (iter.hasNext()) {
+                zone = iter.next();
+            }
+        }
+        serverApi = novaApi.getServerApiForZone(zone);
+        for (VMMetadata eachVMetadata : vmMetadata) {
+        	Map<String, String> userMetadata = eachVMetadata.getUserMetadata();
+        	Set<String> keys = userMetadata.keySet();
+        	boolean deleteKeyExists = false;
+        	for (String eachKey : keys) {
+        		if (eachKey.equals("delete")) {        			
+        			userMetadata.put("delete", "false");
+        			serverApi.updateMetadata(eachVMetadata.getProviderId(), userMetadata);
+        			deleteKeyExists = true;
+        		}
+        	}
+        	if (!deleteKeyExists) {
+        		userMetadata.put("delete", "false");
+        		serverApi.setMetadata(eachVMetadata.getProviderId(), userMetadata);
+        	}
+        }    	
+    }
     
     /**
      * {@inheritDoc}
@@ -167,9 +187,13 @@ public class JCloudsWrapperServiceOpenStackImpl implements JCloudsWrapperService
 			Set<VMMetadata> vmMetadataSet) {
 		if ((!vmMetadataSet.isEmpty()) && (vmMetadataSet != null)) {
 			for (VMMetadata eachVmMetadata : vmMetadataSet) {
-				// TODO Add check for deletion flag and modify nodeMetadataSet
-				// if Necessary
-				destroyNode(eachVmMetadata.getNodeId());
+				if (this.isVMDeletable(eachVmMetadata)) {
+					destroyNode(eachVmMetadata.getNodeId());
+				} else {
+					LOG.log(Level.INFO, "Cannot delete node: " + eachVmMetadata);
+					LOG.log(Level.INFO, "userMetadata \"delete\" is \"false\".....Please delete node through Horizon");
+					vmMetadataSet.remove(eachVmMetadata);
+				}
 			}
 		} else {
 			throw new RuntimeException("NodeMetadata Set cannot be empty");
@@ -181,21 +205,27 @@ public class JCloudsWrapperServiceOpenStackImpl implements JCloudsWrapperService
      * {@inheritDoc}
      */
     public void destroyNode(String id) {
-    	VMMetadata vmMetadata = getNodeMetadata(id);
-    	Set<String> publicAddresses = vmMetadata.getPublicAddresses();
-    	if (publicAddresses == null || publicAddresses.isEmpty()) {
-    		computeService.destroyNode(id);
-    	} else {  
-    		for (String eachPublicAddress : publicAddresses) {
-    			floatingIPApi.removeFromServer(eachPublicAddress.trim(), vmMetadata.getProviderId());
-    		}
-    		try {
-				Thread.sleep(SLEEP_TIME_IN_MILLISECONDS);
-			} catch (InterruptedException e) {
-				e.printStackTrace();
+		VMMetadata vmMetadata = getNodeMetadata(id);
+		if (this.isVMDeletable(vmMetadata)) {
+			Set<String> publicAddresses = vmMetadata.getPublicAddresses();
+			if (publicAddresses == null || publicAddresses.isEmpty()) {
+				computeService.destroyNode(id);
+			} else {
+				for (String eachPublicAddress : publicAddresses) {
+					floatingIPApi.removeFromServer(eachPublicAddress.trim(),
+							vmMetadata.getProviderId());
+				}
+				try {
+					Thread.sleep(SLEEP_TIME_IN_MILLISECONDS);
+				} catch (InterruptedException e) {
+					e.printStackTrace();
+				}
+				computeService.destroyNode(id);
 			}
-			computeService.destroyNode(id);
-    	}        
+		} else {
+			LOG.log(Level.INFO, "Cannot delete node: " + vmMetadata);
+			LOG.log(Level.INFO, "userMetadata \"delete\" is \"false\".....Please delete node through Horizon");
+		}
     }
     
     /**
@@ -621,5 +651,19 @@ public class JCloudsWrapperServiceOpenStackImpl implements JCloudsWrapperService
     			throw new RuntimeException("IP Address " + eachFloatingIPAddress + " does not exist in the Floating IPs pool");
     		}
     	}
-    }    
+    } 
+    
+    private boolean isVMDeletable(VMMetadata vmMetadata) {
+    	boolean deletable = true;
+    	Map<String, String> userMetadata = vmMetadata.getUserMetadata();
+    	Set<String> keys = userMetadata.keySet();
+    	for (String eachKey : keys) {
+    		if (eachKey.equals("delete")) {   
+    			if (userMetadata.get(eachKey).equals("false")) {
+    				deletable = false;
+    			}
+    		}
+    	}
+    	return deletable;
+    }
 }
