@@ -186,14 +186,17 @@ public class JCloudsWrapperServiceOpenStackImpl implements JCloudsWrapperService
 	public Set<VMMetadata> destroyNodesMatching(
 			Set<VMMetadata> vmMetadataSet) {
 		if ((!vmMetadataSet.isEmpty()) && (vmMetadataSet != null)) {
+			Set<VMMetadata> deletedVMMetadataSet = new HashSet<VMMetadata>();
 			for (VMMetadata eachVmMetadata : vmMetadataSet) {
 				if (this.isVMDeletable(eachVmMetadata)) {
 					destroyNode(eachVmMetadata.getNodeId());
 				} else {
-					LOG.log(Level.INFO, "Cannot delete node: " + eachVmMetadata);
-					LOG.log(Level.INFO, "userMetadata \"delete\" is \"false\".....Please delete node through Horizon");
-					vmMetadataSet.remove(eachVmMetadata);
+					LOG.log(Level.INFO, "Cannot delete node: " + eachVmMetadata + "\n" + "userMetadata \"delete\" is \"false\".....Please delete node through Horizon");					
+					deletedVMMetadataSet.add(eachVmMetadata);
 				}
+			}
+			for (VMMetadata eachDeletedVmMetadata : deletedVMMetadataSet) {
+				vmMetadataSet.remove(eachDeletedVmMetadata);
 			}
 		} else {
 			throw new RuntimeException("NodeMetadata Set cannot be empty");
