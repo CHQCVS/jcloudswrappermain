@@ -57,9 +57,9 @@
 								<floatingIP>162.150.40.154</floatingIP>
 								<floatingIP>162.150.40.155</floatingIP>
 							</floatingIPs>	-->						
-							<hostname>cmc.os.hostname</hostname>
-							<privateIP>cmc.os.privateIP</privateIP>
-							<publicIP>cmc.os.publicIP</publicIP>							
+							<hostnameProperty>cmc.os.hostname</hostnameProperty>
+							<privateIPProperty>cmc.os.privateIP</privateIPProperty>
+							<publicIPProperty>cmc.os.publicIP</publicIPProperty>							
 						</configuration>
 					</execution>
 					<execution>

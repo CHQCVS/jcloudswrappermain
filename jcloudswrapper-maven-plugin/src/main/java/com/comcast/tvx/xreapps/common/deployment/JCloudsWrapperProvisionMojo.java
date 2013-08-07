@@ -69,19 +69,19 @@ public class JCloudsWrapperProvisionMojo extends AbstractMojo {
 	private File userData;
 	
 	/**
-	 * @parameter expression="${hostname}" default-value="hostname"
+	 * @parameter expression="${hostnameProperty}" default-value="hostnameProperty"
 	 */
-	private String hostname;
+	private String hostnameProperty;
 
 	/**
-	 * @parameter expression="${privateIP}" default-value="privateIP"
+	 * @parameter expression="${privateIPProperty}" default-value="privateIPProperty"
 	 */
-	private String privateIP;
+	private String privateIPProperty;
 
 	/**
-	 * @parameter expression="${publicIP}" default-value="publicIP"
+	 * @parameter expression="${publicIPProperty}" default-value="publicIPProperty"
 	 */
-	private String publicIP;
+	private String publicIPProperty;
 	
 	/**
 	 * The Maven Session object
@@ -225,12 +225,12 @@ public class JCloudsWrapperProvisionMojo extends AbstractMojo {
 		int count = 1;
 		for (MavenProject proj : session.getProjects()) {
 			for (VMMetadata eachVmMetadata : vmMetadata) {				
-				proj.getProperties().put(hostname + "." + count, eachVmMetadata.getHostname());
+				proj.getProperties().put(hostnameProperty + "." + count, eachVmMetadata.getHostname());
 				if (!eachVmMetadata.getPrivateAddresses().isEmpty()) {
-					proj.getProperties().put(privateIP + "." + count, eachVmMetadata.getPrivateAddresses().iterator().next());
+					proj.getProperties().put(privateIPProperty + "." + count, eachVmMetadata.getPrivateAddresses().iterator().next());
 				}
 				if (!eachVmMetadata.getPublicAddresses().isEmpty()) {
-					proj.getProperties().put(publicIP + "." + count, eachVmMetadata.getPublicAddresses().iterator().next());
+					proj.getProperties().put(publicIPProperty + "." + count, eachVmMetadata.getPublicAddresses().iterator().next());
 				}
 				count++;
 			}					
