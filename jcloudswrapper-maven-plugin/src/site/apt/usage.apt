@@ -12,6 +12,12 @@ Usage
      
   The provision-vm goal provisions vms in the specified Cloud Provider using the JCloudsWrapper Interface. This Goal will block untill all the VMs are provisioned. The provision-vm goal in addition to this will set maven properties for the hostnames in the property specified in \<hostnameProperty\> tag, private IP addresses(if any) in the property specified in the \<privateIPProperty\> tag and public IP addresses(if any) in the property specified in the \<publicIPProperty\> tag. \  
   
+  <<NOTE:>>
+    
+  <<This goal assumes that a Keypair name called "cloudkey" exists in the cloud provider.>>
+    
+  <<This goal assumes that a security group name called "default" exists in the cloud provider.>>
+  
   <Configuration parameters:>  
   
   This goal takes the following configuration parameters. If you omit the optional parameters, then their default values will be used

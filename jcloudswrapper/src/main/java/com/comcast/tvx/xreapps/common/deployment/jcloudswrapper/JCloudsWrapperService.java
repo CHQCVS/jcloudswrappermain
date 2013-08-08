@@ -30,6 +30,8 @@ public interface JCloudsWrapperService {
 	    
     /**
      * Provision nodes (VMs)
+     * Note: This assumes that a Keypair name called "cloudkey" exists in the cloud provider
+     * Note: This assumes that a security group name called "default" exists in the cloud provider
      * @param operatingSystemImage - {@link OperatingSystemImage}
      * @param hardwareProfile - {@link HardwareProfile}
      * @param count - Number of nodes to be provisioned
@@ -44,6 +46,8 @@ public interface JCloudsWrapperService {
     
     /**
      * Provision nodes (VMs) using a default template - Default template uses a specific {@link OperatingSystemImage} and Hardware Profile {@link HardwareProfile}
+     * Note: This assumes that a Keypair name called "cloudkey" exists in the cloud provider
+     * Note: This assumes that a security group name called "default" exists in the cloud provider
      * @param count - Number of nodes to be provisioned
      * @param groupName - The name of the logical group which will associated these nodes (VMs)
      * @param floatingIPAddresses - {@link List} of FloatingIPAddresses to be allocated to the VMs. If <code>null</code> no Floating IP Address is allocated to VMs
