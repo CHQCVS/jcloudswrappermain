@@ -1,0 +1,167 @@
+Usage
+
+  This plugin has 3 goals; provision-vm, list-vm and delete-vm. All of these 3 goals require the following system properties 
+   
+  -  keystone.endpoint             : The KeyStone endpoint URL \
+  -  tenant.name                   : The tenant name \
+  -  username                      : Username \
+  -  password                      : Password \
+  -  cloudProvider      [optional] : Cloud Provider - options are OPEN_STACK : Default : OPEN_STACK 
+ 
+  <<Goal: provision-vm>>
+     
+  The provision-vm goal provisions vms in the specified Cloud Provider using the JCloudsWrapper Interface. This Goal will block untill all the VMs are provisioned. The provision-vm goal in addition to this will set maven properties for the hostnames in the property specified in \<hostnameProperty\> tag, private IP addresses(if any) in the property specified in the \<privateIPProperty\> tag and public IP addresses(if any) in the property specified in the \<publicIPProperty\> tag. \  
+  
+  <Configuration parameters:>  
+  
+  This goal takes the following configuration parameters. If you omit the optional parameters, then their default values will be used
+     
+  -  groupName                     : Group Name to which the VM will belong to. The hostname of the VM will typically be the "goupName-[random 3 digit alphanumeric string]"
+   
+  -  os					[optional] : Options are: CENTOS_58_x86_64, CENTOS_63_x86_64, CENTOS_LATEST_x86_64 : <<Default : CENTOS_LATEST_x86_64>> 
+  
+  -  hardware           [optional] : Options are: XLARGE_RAM_16384, LARGE_RAM_8192, MEDIUM_RAM_4096, SMALL_RAM_2048, TINY_RAM_512 : <<Default : MEDIUM_RAM_4096>> 
+   
+  -  count				[optional] : Number of VMs to be provisioned : <<Default : 1>> 
+  
+  -  floatingIPs        [optional] : This is a java.util.List of floatingIPs (Public Addresses) to be assigned to the VMs. Note that the "count" and number of floatingIPs should be equal.    
+                                     The floatingIPs will then be randomly assigned to the VMs to be provisioned. Note that the floating IPs should be already available in the pool : <<Default : null>> 
+                                      
+  -  userData           [optional] : Absolute Path to the File containing the userData : <<Default : null>> 
+  
+  -  hostnameProperty   [optional] : Name of the pom property where you would like to store the return value of the hostnames of the provisioned VMs. Based on the number of VMs to be provisioned the property will be  
+									 populated as hostnameProperty.1, hostnameProperty.2 etc : <<Default : hostnameProperty>>
+									  
+  -  privateIPProperty  [optional] : Name of the pom property where you would like to store the return value of the private IP addresses of the provisioned VMs. Based on the number of VMs to be provisioned the property will be 
+									 populated as privateIPProperty.1, privateIPProperty.2 etc : <<Default : privateIPProperty>> 
+									 
+  -  publicIPProperty   [optional] : Name of the pom property where you would like to store the return value of the public IP addresses of the provisioned VMs. Based on the number of VMs to be provisioned the property will be  
+									 populated as publicIPProperty.1, publicIPProperty.2 etc : <<Default : publicIPProperty>> 
+  
+  POM setup sample usage:  
+    
+-----
+	<plugins>
+		<plugin>
+			<groupId>com.comcast.tvx.xreapps.common.deployment</groupId>
+			<artifactId>jcloudswrapper-maven-plugin</artifactId>				
+			<executions>
+				<execution>
+					<id>provision</id>
+					<phase>generate-resources</phase>
+					<goals>
+						<goal>provision-vm</goal>
+					</goals>
+					<configuration>
+						<os>CENTOS_LATEST_x86_64</os>
+						<hardware>MEDIUM_RAM_4096</hardware>
+						<count>2</count>
+						<groupName>jcloudswrapper-plugin</groupName>							
+						<floatingIPs> 
+							<floatingIP>162.150.40.154</floatingIP>
+							<floatingIP>162.150.40.155</floatingIP>
+						</floatingIPs>						
+						<hostnameProperty>cmc.os.hostname</hostnameProperty>
+						<privateIPProperty>cmc.os.privateIP</privateIPProperty>
+						<publicIPProperty>cmc.os.publicIP</publicIPProperty>							
+					</configuration>
+				</execution>
+	                 </executions>
+	        </plugin>				
+		<plugin>
+		        <groupId>org.apache.maven.plugins</groupId>
+			<artifactId>maven-failsafe-plugin</artifactId>
+			<configuration>
+			   <forkCount>0</forkCount>
+				<systemPropertyVariables>						
+				   <cmc.os.hostname.1>${cmc.os.hostname.1}</cmc.os.hostname.1>
+				   <cmc.os.privateIP.1>${cmc.os.privateIP.1}</cmc.os.privateIP.1>						
+				   <cmc.os.publicIP.1>${cmc.os.publicIP.1}</cmc.os.publicIP.1>
+				   <cmc.os.hostname.2>${cmc.os.hostname.2}</cmc.os.hostname.2>
+				   <cmc.os.privateIP.2>${cmc.os.privateIP.2}</cmc.os.privateIP.2>						
+				   <cmc.os.publicIP.2>${cmc.os.publicIP.2}</cmc.os.publicIP.2>												
+				</systemPropertyVariables>					
+			</configuration>				
+		</plugin>
+	</plugins>	
+-------- 
+  	
+  <<Goal: delete-vm>>  
+  
+  The delete-vm goal deletes vms in the specified Cloud Provider using the JCloudsWrapper Interface. This Goal will block untill all the VMs are deleted. \ 
+  
+  <Configuration parameters:> 
+  
+  This goal takes the following configuration parameters. 
+    
+  -  groupName or nameStartsWith   : The groupName that the VM belongs to or the inital few characters of the VM name. Both "groupName" and "nameStartsWith" cannot be set in the same execution. Also both "groupName" 
+									 and "nameStartWith" cannot be null or empty. Set either one.  
+  
+  POM setup sample usage:   
+
+------ 
+  <plugins>
+			<plugin>
+				<groupId>com.comcast.tvx.xreapps.common.deployment</groupId>
+				<artifactId>jcloudswrapper-maven-plugin</artifactId>				
+				<executions>
+					<execution>
+						<id>delete</id>
+						<phase>generate-resources</phase>
+						<goals>
+							<goal>delete-vm</goal>
+						</goals>
+						<configuration>
+							<groupName>jcloudswrapper-plugin</groupName>
+						</configuration>
+					</execution>		
+				<executions>
+			</plugin>			
+  </plugins>
+-----
+
+  <<Goal: list-vm>>
+  
+  The list-vm goal lists vms in the specified Cloud Provider using the JCloudsWrapper Interface. This Goal will block untill all the VMs are listed. 
+  
+  <Configuration parameters:>
+  
+  This goal takes the following configuration parameters. 
+  
+  -  groupName or nameStartsWith or listAll  : The groupName that the VM belongs to or the inital few characters of the VM name or listAll VMs in the cloud provider. Set any one ONLY; "groupName"/nameStartsWith"/"listAll=true".
+                                               All three "groupName"/nameStartsWith"/"listAll" cannot be null or false in the case of listAll. 
+ 
+  
+  POM setup sample usage:
+  
+-----    
+  <plugins>
+	<plugin>
+		<groupId>com.comcast.tvx.xreapps.common.deployment</groupId>
+		<artifactId>jcloudswrapper-maven-plugin</artifactId>				
+		<executions>
+			<execution>
+				<id>list1</id>
+				<phase>generate-resources</phase>
+				<goals>
+					<goal>list-vm</goal>
+				</goals>
+				<configuration>
+					<groupName>jcloudswrapper-plugin</groupName>
+				</configuration>
+			</execution>		
+			<execution>
+				<id>list2</id>
+				<phase>generate-resources</phase>
+				<goals>
+					<goal>list-vm</goal>
+				</goals>
+				<configuration>
+					<listAll>true</listAll>
+				</configuration>
+			</execution>		
+		<executions>
+	</plugin>			
+  </plugins>
+-----	
+  

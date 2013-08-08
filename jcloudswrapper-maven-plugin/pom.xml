@@ -42,4 +42,24 @@
 			<artifactId>jcloudswrapper</artifactId>			
 		</dependency>		
 	</dependencies>
+	<reporting>
+		<plugins>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-javadoc-plugin</artifactId>				
+				<configuration>
+					<failOnError>false</failOnError>
+					<verbose>true</verbose>
+				</configuration>
+				<reportSets>
+					<reportSet>
+						<id>html</id>
+						<reports>
+							<report>javadoc</report>
+						</reports>
+					</reportSet>
+				</reportSets>
+			</plugin>
+		</plugins>
+	</reporting>
 </project>

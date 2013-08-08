@@ -1,0 +1,4 @@
+Introduction
+
+  The plugin is responsible for provisioning, deleting and listing VMs in the cloud using the JCloudsWrapper service. After the VMs are provisioned or deleted, the plugin returns the list of VMs successfully provisioned 
+  or deleted. The provision goal in addition to this will set maven properties for the hostname, private IP address(if any) and public IP address(if any) to be used by any tests which might follow.
