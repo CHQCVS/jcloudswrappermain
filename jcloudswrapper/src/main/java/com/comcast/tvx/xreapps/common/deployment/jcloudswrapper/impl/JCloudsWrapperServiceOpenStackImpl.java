@@ -10,6 +10,7 @@ import com.comcast.tvx.xreapps.common.deployment.jcloudswrapper.filter.FilterBui
 import com.comcast.tvx.xreapps.common.deployment.jcloudswrapper.filter.NodeMetadataPredicateBuilder;
 import com.comcast.tvx.xreapps.common.deployment.jcloudswrapper.filterimpl.FilterBuilderImpl;
 import com.comcast.tvx.xreapps.common.deployment.jcloudswrapper.filterimpl.NodeMetadataPredicateBuilderImpl;
+import com.comcast.tvx.xreapps.common.deployment.jcloudswrapper.utilities.Utility;
 
 import com.google.common.base.Optional;
 import com.google.common.collect.FluentIterable;
@@ -236,15 +237,15 @@ public class JCloudsWrapperServiceOpenStackImpl implements JCloudsWrapperService
      */
     public Set<VMMetadata> provisionVM(
         OperatingSystemImage operatingSystemImage, HardwareProfile hardwareProfile,
-        Integer count, String groupName, List<String> floatingIPAddresses, String script) { 
+        Integer count, String groupName, List<String> floatingIPAddresses, String script, Set<String> securityGroupNames, String keyPairName) { 
     	NovaTemplateOptions templateOptions;
         
     	Set<? extends NodeMetadata> nodeMetadata;  
     	Set<VMMetadata> vmMetadatas = new HashSet<VMMetadata>();
     	if (script != null) {
-    		templateOptions = this.getNovaTemplateOptions(groupName, script);
+    		templateOptions = this.getNovaTemplateOptions(groupName, script, securityGroupNames, keyPairName);
     	} else {
-    		templateOptions = this.getNovaTemplateOptions(groupName, null);
+    		templateOptions = this.getNovaTemplateOptions(groupName, null, securityGroupNames, keyPairName);
     	}       
 
         TemplateBuilder templateBuilder = this.getTemplateBuilder();
@@ -280,15 +281,15 @@ public class JCloudsWrapperServiceOpenStackImpl implements JCloudsWrapperService
      * {@inheritDoc}
      */
     public Set<VMMetadata> provisionVM(Integer count,
-        String groupName, List<String> floatingIPAddresses, String script) {
+        String groupName, List<String> floatingIPAddresses, String script, Set<String> securityGroupNames, String keyPairName) {
         Set<? extends NodeMetadata> nodeMetadata;
         Set<VMMetadata> vmMetadatas = new HashSet<VMMetadata>();
         NovaTemplateOptions templateOptions;
         
         if (script != null) {
-    		templateOptions = this.getNovaTemplateOptions(groupName, script);
+    		templateOptions = this.getNovaTemplateOptions(groupName, script, securityGroupNames, keyPairName);
     	} else {
-    		templateOptions = this.getNovaTemplateOptions(groupName, null);
+    		templateOptions = this.getNovaTemplateOptions(groupName, null, securityGroupNames, keyPairName);
     	}       
                 
         TemplateBuilder templateBuilder = this.getTemplateBuilder();
@@ -406,66 +407,90 @@ public class JCloudsWrapperServiceOpenStackImpl implements JCloudsWrapperService
         return novaApi.getConfiguredZones();
     }
     
-    private boolean validateKeyPairName() {
-    	 Set<String> configuredZones = this.getConfiguredZones();
-    	 boolean keyPairExists = false;
-         String zone = null;
+	private boolean validateKeyPairName(String keyPairName) {		
+		Set<String> configuredZones = this.getConfiguredZones();
+		boolean keyPairExists = false;
+		String zone = null;
 
-         if (configuredZones.isEmpty()) {
-             throw new RuntimeException("No configured zones found");
-         } else {
-             Iterator<String> iter = configuredZones.iterator();
+		if (configuredZones.isEmpty()) {
+			throw new RuntimeException("No configured zones found");
+		} else {
+			Iterator<String> iter = configuredZones.iterator();
 
-             if (iter.hasNext()) {
-                 zone = iter.next();
-             }
-         }
-    	Optional<? extends KeyPairApi> keyPairApi = novaApi.getKeyPairExtensionForZone(zone);
-    	if (keyPairApi.isPresent()) {
-    		FluentIterable<? extends KeyPair> keyPairs = keyPairApi.get().list();
-    		Iterator<? extends KeyPair> iter = keyPairs.iterator();
-    		while(iter.hasNext()) {
-    			if (iter.next().getName().equals(JCloudsWrapperServiceOpenStackConstants.KEY_PAIR_NAME)) {
-    				keyPairExists = true;
-    			}
-    		}
-    	}
-    	return keyPairExists;
-    }
+			if (iter.hasNext()) {
+				zone = iter.next();
+			}
+		}
+		
+		Optional<? extends KeyPairApi> keyPairApi = novaApi
+				.getKeyPairExtensionForZone(zone);
+		if (keyPairApi.isPresent()) {
+			FluentIterable<? extends KeyPair> keyPairs = keyPairApi.get()
+					.list();
+			Iterator<? extends KeyPair> iter = keyPairs.iterator();
+			while (iter.hasNext()) {
+				if (iter.next().getName().equals(keyPairName)) {
+					keyPairExists = true;
+				}
+			}
+		}
+		return keyPairExists;
+	}
     
-    private NovaTemplateOptions getNovaTemplateOptions(String groupName, String script) {
-    	 boolean defaultSecurityGroupFound = false;         
+    private NovaTemplateOptions getNovaTemplateOptions(String groupName, String script, Set<String> securityGroupNames, String keyPairName) {
+    	 Set<String> securityGroupsToBeUsed = new HashSet<String>();
+    	 String keyPairToUse;
+    	 boolean defaultSecurityGroupFound = false;
+    	 boolean listedSecurityGroupFound = false;
          NovaTemplateOptions templateOptions = new NovaTemplateOptions();
-
-         Set<String> securityGroups = getSecurityGroups();
-         Iterator<String> iter = securityGroups.iterator();
-
-         while (iter.hasNext()) {
-
-             if (iter.next().equals(JCloudsWrapperServiceOpenStackConstants.DEFAULT_SECURITY_GROUP)) {
-                 defaultSecurityGroupFound = true;
-
-                 break;
-             }
-         }
-
-         if (!defaultSecurityGroupFound) {
-             throw new RuntimeException("No default security group found");
-         }
          
-         if (!this.validateKeyPairName()) {
+         Set<String> securityGroups = getSecurityGroups();         
+         
+         if (securityGroupNames == null || securityGroupNames.isEmpty()) {
+        	 Iterator<String> iter = securityGroups.iterator();
+        	 while (iter.hasNext()) {
+
+        		 if (iter.next().equals(JCloudsWrapperServiceOpenStackConstants.DEFAULT_SECURITY_GROUP)) {
+        			 defaultSecurityGroupFound = true;
+
+        			 break;
+        		 }
+        	 }
+
+        	 if (!defaultSecurityGroupFound) {
+        		 throw new RuntimeException("No default security group found");
+        	 }
+        	 securityGroupsToBeUsed.add(JCloudsWrapperServiceOpenStackConstants.DEFAULT_SECURITY_GROUP);
+         } else {
+        	 Set<String> similarSecurityGroupNames = (Set<String>) Utility.returnCommonElementsInCollection(securityGroups, securityGroupNames);
+        	 if (similarSecurityGroupNames.equals(securityGroupNames)) {
+        		 
+        		 listedSecurityGroupFound = true;
+        	 }
+        	 
+        	 if (!listedSecurityGroupFound) {
+        		 throw new RuntimeException("Security groups does not exist on OpenStack. Please check security group names or create new security groups");
+        	 }
+        	 securityGroupsToBeUsed = securityGroupNames;
+         }
+         if (keyPairName == null || keyPairName.isEmpty()) {
+ 			keyPairToUse = JCloudsWrapperServiceOpenStackConstants.KEY_PAIR_NAME;
+ 		 } else {
+ 			keyPairToUse = keyPairName;
+ 		 }
+         if (!this.validateKeyPairName(keyPairToUse)) {
         	 throw new RuntimeException("No Key Pair found");
          }
          if (script != null) {        
         	byte[] userdata = script.getBytes();
 			return ((NovaTemplateOptions) templateOptions.userMetadata("name", groupName).userMetadata("delete",
 			     "true").securityGroupNames(
-			     JCloudsWrapperServiceOpenStackConstants.DEFAULT_SECURITY_GROUP).userData(userdata)).keyPairName(JCloudsWrapperServiceOpenStackConstants.KEY_PAIR_NAME).overrideLoginUser(JCloudsWrapperServiceOpenStackConstants.LOGIN_USER);
+			     securityGroupsToBeUsed.toArray(new String[securityGroupsToBeUsed.size()])).userData(userdata)).keyPairName(keyPairToUse).overrideLoginUser(JCloudsWrapperServiceOpenStackConstants.LOGIN_USER);
 		
          }          
 		return templateOptions.userMetadata("name", groupName).userMetadata("delete",
 			 "true").securityGroupNames(
-			     JCloudsWrapperServiceOpenStackConstants.DEFAULT_SECURITY_GROUP).keyPairName(JCloudsWrapperServiceOpenStackConstants.KEY_PAIR_NAME).overrideLoginUser(JCloudsWrapperServiceOpenStackConstants.LOGIN_USER);
+			     securityGroupsToBeUsed.toArray(new String[securityGroupsToBeUsed.size()])).keyPairName(keyPairToUse).overrideLoginUser(JCloudsWrapperServiceOpenStackConstants.LOGIN_USER);
 		
          
     }    

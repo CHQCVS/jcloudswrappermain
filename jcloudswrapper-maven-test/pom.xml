@@ -56,7 +56,13 @@
 							<!--<floatingIPs> 
 								<floatingIP>162.150.40.154</floatingIP>
 								<floatingIP>162.150.40.155</floatingIP>
-							</floatingIPs>	-->						
+							</floatingIPs>	-->	
+						    <securityGroupNames>
+								<securityGroupName>default</securityGroupName>
+								<securityGroupName>haproxy</securityGroupName>							
+								<securityGroupName>zookeeper</securityGroupName>
+							</securityGroupNames> 
+						 	<keyPairName>cloudkey</keyPairName>	  	 		
 							<hostnameProperty>cmc.os.hostname</hostnameProperty>
 							<privateIPProperty>cmc.os.privateIP</privateIPProperty>
 							<publicIPProperty>cmc.os.publicIP</publicIPProperty>							

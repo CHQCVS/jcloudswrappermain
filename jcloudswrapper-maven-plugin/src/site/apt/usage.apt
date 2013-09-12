@@ -14,9 +14,9 @@ Usage
   
   <<NOTE:>>
     
-  <<This goal assumes that a Keypair name called "cloudkey" exists in the cloud provider.>>
+  <<This goal assumes that a default Keypair name called "cloudkey" exists in the cloud provider.>>
     
-  <<This goal assumes that a security group name called "default" exists in the cloud provider.>>
+  <<This goal assumes that a default Security group name called "default" exists in the cloud provider.>>
   
   <Configuration parameters:>  
   
@@ -32,6 +32,11 @@ Usage
   
   -  floatingIPs        [optional] : This is a java.util.List of floatingIPs (Public Addresses) to be assigned to the VMs. Note that the "count" and number of floatingIPs should be equal.    
                                      The floatingIPs will then be randomly assigned to the VMs to be provisioned. Note that the floating IPs should be already available in the pool : <<Default : null>> 
+  
+  -  securityGroupNames [optional] : This is a java.util.Set of securityGroupNames to be associated with the VMs. The security group names provided must exist in the cloud provider. If null or not 
+  									 provided the default security group name is used : <<Default : null>>
+  									 
+  -  keyPairName        [optional] : The keyPairName provided must exist in the cloud provider. If null or not provided the default key pair name is used : <<Default : null>>
                                       
   -  userData           [optional] : Absolute Path to the File containing the userData : <<Default : null>> 
   
@@ -66,7 +71,13 @@ Usage
 						<floatingIPs> 
 							<floatingIP>162.150.40.154</floatingIP>
 							<floatingIP>162.150.40.155</floatingIP>
-						</floatingIPs>						
+						</floatingIPs>
+						<securityGroupNames>
+							<securityGroupName>default</securityGroupName>
+							<securityGroupName>haproxy</securityGroupName>							
+							<securityGroupName>zookeeper</securityGroupName>
+						</securityGroupNames> 
+						<keyPairName>cloudkey</keyPairName>	 						
 						<hostnameProperty>cmc.os.hostname</hostnameProperty>
 						<privateIPProperty>cmc.os.privateIP</privateIPProperty>
 						<publicIPProperty>cmc.os.publicIP</publicIPProperty>							

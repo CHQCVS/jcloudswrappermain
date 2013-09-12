@@ -69,6 +69,16 @@ public class JCloudsWrapperProvisionMojo extends AbstractMojo {
 	private File userData;
 	
 	/**
+	 * @parameter expression="${securityGroupNames}"
+	 */
+	private Set<String> securityGroupNames;
+	
+	/**
+	 * @parameter expression="${keyPairName}"
+	 */
+	private String keyPairName;
+	
+	/**
 	 * @parameter expression="${hostnameProperty}" default-value="hostnameProperty"
 	 */
 	private String hostnameProperty;
@@ -108,19 +118,31 @@ public class JCloudsWrapperProvisionMojo extends AbstractMojo {
 		}
 
 		getLog().info("Count is: " + count);
+		getLog().info("Key Pair name is: " + keyPairName);
+		
+		if (securityGroupNames != null) {
+			getLog().info("Security Group names are: " + securityGroupNames.toString());
+		} else {
+			getLog().info("Security Group names are: " + securityGroupNames);
+		}
+		
 
 		if ((os == null) || (hardware == null)) {
 			if (floatingIPs.isEmpty() || floatingIPs == null) {
 				getLog().info(
 						"Using default operating system and hardware profile");
 				getLog().info("Floating IP: " + floatingIPs);
-				if (userData == null || !userData.exists()) {					
+				if (userData == null || !userData.exists()) {
 					vmMetadata = jCloudsWrapperService.provisionVM(count,
-							groupName, null, null);
+							groupName, null, null, securityGroupNames,
+							keyPairName);
 				} else {
-					getLog().info("Path to userData is : " + userData.getAbsolutePath());
+					getLog().info(
+							"Path to userData is : "
+									+ userData.getAbsolutePath());
 					vmMetadata = jCloudsWrapperService.provisionVM(count,
-							groupName, null, this.getUserDataString(userData));
+							groupName, null, this.getUserDataString(userData),
+							securityGroupNames, keyPairName);
 				}
 				this.printVMMetadata(vmMetadata);
 			} else {
@@ -129,13 +151,18 @@ public class JCloudsWrapperProvisionMojo extends AbstractMojo {
 				for (String eachFloatingIP : floatingIPs) {
 					getLog().info("Floating IP: " + eachFloatingIP);
 				}
-				if (userData == null || !userData.exists()) {					
+				if (userData == null || !userData.exists()) {
 					vmMetadata = jCloudsWrapperService.provisionVM(count,
-							groupName, floatingIPs, null);
+							groupName, floatingIPs, null, securityGroupNames,
+							keyPairName);
 				} else {
-					getLog().info("Path to userData is : " + userData.getAbsolutePath());
+					getLog().info(
+							"Path to userData is : "
+									+ userData.getAbsolutePath());
 					vmMetadata = jCloudsWrapperService.provisionVM(count,
-							groupName, floatingIPs, this.getUserDataString(userData));
+							groupName, floatingIPs, this
+									.getUserDataString(userData),
+							securityGroupNames, keyPairName);
 				}
 				this.printVMMetadata(vmMetadata);
 			}
@@ -144,15 +171,18 @@ public class JCloudsWrapperProvisionMojo extends AbstractMojo {
 				getLog().info("Operating system is: " + os);
 				getLog().info("Hardware Profile is: " + hardware);
 				getLog().info("Floating IP: " + floatingIPs);
-				if (userData == null || !userData.exists()) {					
-					vmMetadata = jCloudsWrapperService.provisionVM(
-							os, hardware, count,
-							groupName, null, null);
+				if (userData == null || !userData.exists()) {
+					vmMetadata = jCloudsWrapperService.provisionVM(os,
+							hardware, count, groupName, null, null,
+							securityGroupNames, keyPairName);
 				} else {
-					getLog().info("Path to userData is : " + userData.getAbsolutePath());
-					vmMetadata = jCloudsWrapperService.provisionVM(
-							os, hardware, count,
-							groupName, null, this.getUserDataString(userData));
+					getLog().info(
+							"Path to userData is : "
+									+ userData.getAbsolutePath());
+					vmMetadata = jCloudsWrapperService.provisionVM(os,
+							hardware, count, groupName, null, this
+									.getUserDataString(userData),
+							securityGroupNames, keyPairName);
 
 				}
 				this.printVMMetadata(vmMetadata);
@@ -162,17 +192,20 @@ public class JCloudsWrapperProvisionMojo extends AbstractMojo {
 				for (String eachFloatingIP : floatingIPs) {
 					getLog().info("Floating IP: " + eachFloatingIP);
 				}
-				if (userData == null || !userData.exists()) {					
-					vmMetadata = jCloudsWrapperService.provisionVM(
-							os, hardware, count,
-							groupName, floatingIPs, null);
+				if (userData == null || !userData.exists()) {
+					vmMetadata = jCloudsWrapperService.provisionVM(os,
+							hardware, count, groupName, floatingIPs, null,
+							securityGroupNames, keyPairName);
 
 				} else {
-					getLog().info("Path to userData is : " + userData.getAbsolutePath());
-					vmMetadata = jCloudsWrapperService.provisionVM(
-							os, hardware, count,
-							groupName, floatingIPs, this.getUserDataString(userData));
-				}				
+					getLog().info(
+							"Path to userData is : "
+									+ userData.getAbsolutePath());
+					vmMetadata = jCloudsWrapperService.provisionVM(os,
+							hardware, count, groupName, floatingIPs, this
+									.getUserDataString(userData),
+							securityGroupNames, keyPairName);
+				}
 				this.printVMMetadata(vmMetadata);
 			}
 		}
