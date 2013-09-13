@@ -34,9 +34,9 @@ Usage
                                      The floatingIPs will then be randomly assigned to the VMs to be provisioned. Note that the floating IPs should be already available in the pool : <<Default : null>> 
   
   -  securityGroupNames [optional] : This is a java.util.Set of securityGroupNames to be associated with the VMs. The security group names provided must exist in the cloud provider. If null or not 
-  									 provided the default security group name is used : <<Default : null>>
+  									 provided the default security group name is used : <<Default : default>>
   									 
-  -  keyPairName        [optional] : The keyPairName provided must exist in the cloud provider. If null or not provided the default key pair name is used : <<Default : null>>
+  -  keyPairName        [optional] : The keyPairName provided must exist in the cloud provider. If null or not provided the default key pair name is used : <<Default : cloudkey>>
                                       
   -  userData           [optional] : Absolute Path to the File containing the userData : <<Default : null>> 
   
